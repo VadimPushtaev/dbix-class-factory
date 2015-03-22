@@ -1,1 +1,8 @@
 t/dbix-class-factory-test.sqlite
+META.yml
+MYMETA.json
+MYMETA.yml
+Makefile
+inc/
+blib/
+pm_to_blib

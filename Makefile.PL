@@ -1,20 +1,14 @@
-use 5.006;
-use strict;
-use warnings;
-use ExtUtils::MakeMaker;
+#!/usr/bin/env perl
 
-WriteMakefile(
-    NAME                => 'DBIx::Class::Factory',
-    AUTHOR              => q{Vadim Pushtaev <pushtaev@cpan.org>},
-    VERSION_FROM        => 'lib/DBIx/Class/Factory.pm',
-    ABSTRACT_FROM       => 'lib/DBIx/Class/Factory.pm',
-    ($ExtUtils::MakeMaker::VERSION >= 6.3002
-      ? ('LICENSE'=> 'perl')
-      : ()),
-    PL_FILES            => {},
-    PREREQ_PM => {
-        'Test::More' => 0,
-    },
-    dist                => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
-    clean               => { FILES => 'DBIx-Class-Factory-*' },
-);
+use strict;
+use warnings FATAL => 'all';
+use inc::Module::Install;
+
+test_requires 'DBIx::Class' => 0;
+test_requires 'SQL::Translator' => 0;
+test_requires 'Test::More' => 0;
+test_requires 'Test::Deep' => 0;
+
+all_from 'lib/DBIx/Class/Factory.pm';
+
+WriteAll;
