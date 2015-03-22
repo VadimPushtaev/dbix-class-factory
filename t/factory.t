@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 7;
+use Test::More tests => 9;
 use Test::Deep;
 
 {
@@ -18,6 +18,11 @@ use Test::Deep;
         'name' => {
             data_type => 'varchar',
             size      => '100',
+        },
+        'comment' => {
+            data_type   => 'varchar',
+            size        => '100',
+            is_nullable => 1,
         },
         'superuser' => {
             data_type => 'bool',
@@ -103,14 +108,11 @@ my $schema = DBIx::Class::Factory::Test::Schema->connect(
 
     use base qw(DBIx::Class::Factory);
 
-    sub resultset {
-        $schema->resultset('User');
-    }
-
-    sub fields {
+    __PACKAGE__->resultset($schema->resultset('User'));
+    __PACKAGE__->fields({
         name => __PACKAGE__->seq(sub {'User #' . shift}),
         superuser => 0,
-    }
+    });
 }
 
 {
@@ -118,14 +120,37 @@ my $schema = DBIx::Class::Factory::Test::Schema->connect(
 
     use base qw(DBIx::Class::Factory);
 
-    sub resultset {
-        $schema->resultset('Language');
-    }
-
-    sub fields {
+    __PACKAGE__->resultset($schema->resultset('Language'));
+    __PACKAGE__->fields({
         name => __PACKAGE__->seq(sub {'Language #' . shift}),
-    }
+    });
 }
+
+{
+    package DBIx::Class::Factory::Test::CommentedUserFactory;
+
+    use base qw(DBIx::Class::Factory);
+
+    __PACKAGE__->base_factory('DBIx::Class::Factory::Test::UserFactory');
+    __PACKAGE__->fields({
+        comment => sub {shift->get_field('name')},
+    });
+}
+
+{
+    package DBIx::Class::Factory::Test::CommentedUserFactory2;
+
+    use base qw(DBIx::Class::Factory);
+
+    __PACKAGE__->fields({
+        name    => 'NAME',
+        comment => 'COMMENT',
+    });
+
+    # at the bottom
+    __PACKAGE__->base_factory('DBIx::Class::Factory::Test::CommentedUserFactory'); 
+}
+
 
 $schema->deploy();
 
@@ -193,6 +218,19 @@ cmp_deeply(
     'create_batch'
 );
 
+$result = DBIx::Class::Factory::Test::CommentedUserFactory->create();
+cmp_deeply(
+    $schema->resultset('User')->find($result->id),
+    methods(comment => 'User #9'),
+    'create (with base factory)'
+);
+
+$result = DBIx::Class::Factory::Test::CommentedUserFactory2->create();
+cmp_deeply(
+    $schema->resultset('User')->find($result->id),
+    methods(comment => 'COMMENT', name => 'NAME'),
+    'create (with base factory, base_factory at the bottom)'
+);
 
 END {
     unlink('dbix-class-factory-test.sqlite');

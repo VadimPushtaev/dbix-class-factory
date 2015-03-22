@@ -3,6 +3,8 @@ package DBIx::Class::Factory;
 use strict;
 use warnings;
 
+use DBIx::Class::Factory::Fields;
+
 =head1 NAME
 
 DBIx::Class::Factory - factory-style fixtures for DBIx::Class
@@ -14,7 +16,6 @@ Version 0.01
 =cut
 
 our $VERSION = '0.01';
-
 
 =head1 SYNOPSIS
 
@@ -32,15 +33,50 @@ Perhaps a little code snippet.
 A list of functions that can be exported.  You can delete this section
 if you don't export anything, such as for a purely object-oriented module.
 
-=head1 METHODS TO OVERRIDE
+=head1 METHODS TO CONSTRUCT FACTORY
 
 =cut
 
+sub base_factory {
+    my ($class, $base_class) = @_;
+
+    $class->_class_data->{fields} = {
+        %{ $base_class->_class_data->{fields} },
+        %{ $class->     _class_data->{fields} },
+    };
+
+    $class->_class_data->{resultset} = $base_class->_class_data->{resultset}
+        unless defined $class->_class_data->{resultset};
+
+    no strict 'refs';
+    push(@{$class . '::ISA'}, $base_class);
+
+    return;
+}
+
 sub resultset {
-    die;
+    my ($class, $resultset) = @_;
+
+    $class->_class_data->{resultset} = $resultset;
+
+    return;
 }
 
 sub fields {
+    my ($class, $fields) = @_;
+
+    foreach my $key (keys %{$fields}) {
+        $class->field($key => $fields->{$key});
+    }
+
+    return;
+}
+
+sub field {
+    my ($class, $key, $value) = @_;
+
+    $class->_class_data->{fields}->{$key} = $value;
+
     return;
 }
 
@@ -67,25 +103,21 @@ sub get_fields {
 
     $extra_fields = {} unless defined $extra_fields;
 
-    unless (exists $class->_instance->{fields}) {
-        $class->_instance->{fields} = {
-            $class->maybe::next::method(),
-            $class->fields,
-        };
-    }
+    my $fields = DBIx::Class::Factory::Fields->new( {
+        %{$class->_class_data->{fields}},
+        %{$extra_fields},
+    });
 
-    my $fields = {
-        %{$class->_instance->{fields}},
-        %{$extra_fields}
-    };
-
-    return $class->_process_fields($fields);
+    return $fields->all();
 }
 
 sub build {
     my ($class, $extra_fields) = @_;
 
-    return $class->resultset->new($class->get_fields($extra_fields));
+    my $resultset = $class->_class_data->{resultset};
+    die unless defined $resultset;
+
+    return $resultset->new($class->get_fields($extra_fields));
 }
 
 sub create {
@@ -116,21 +148,6 @@ sub create_batch {
 
 =cut
 
-sub _process_fields {
-    my ($class, $fields) = @_;
-
-    my $processed_fields = {};
-
-    foreach my $key (keys %{$fields}) {
-        my $value = $fields->{$key};
-        $value = $value->() if ref($value) eq 'CODE';
-
-        $processed_fields->{$key} = $value;
-    }
-
-    return $processed_fields;
-}
-
 sub _batch {
     my ($class, $method, $n, $extra_fields) = @_;
 
@@ -142,14 +159,16 @@ sub _batch {
     return \@batch;
 }
 
-sub _instance {
+sub _class_data {
     my ($class) = @_;
 
     no strict 'refs';
 
-    my $var_name = $class . '::instance';
+    my $var_name = $class . '::class_data';
 
-    ${$var_name} = {} unless defined ${$var_name};
+    unless (defined ${$var_name}) {
+        ${$var_name} = {fields => {}}, 
+    }
 
     return ${$var_name};
 }
