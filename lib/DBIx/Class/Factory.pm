@@ -1,6 +1,5 @@
 package DBIx::Class::Factory;
 
-use 5.006;
 use strict;
 use warnings;
 
@@ -68,16 +67,15 @@ sub get_fields {
 
     $extra_fields = {} unless defined $extra_fields;
 
-    our $_fields;
-    unless (defined $_fields) {
-        $_fields = {
+    unless (exists $class->_instance->{fields}) {
+        $class->_instance->{fields} = {
             $class->maybe::next::method(),
             $class->fields,
         };
     }
 
     my $fields = {
-        %{$_fields},
+        %{$class->_instance->{fields}},
         %{$extra_fields}
     };
 
@@ -142,6 +140,18 @@ sub _batch {
     }
 
     return \@batch;
+}
+
+sub _instance {
+    my ($class) = @_;
+
+    no strict 'refs';
+
+    my $var_name = $class . '::instance';
+
+    ${$var_name} = {} unless defined ${$var_name};
+
+    return ${$var_name};
 }
 
 =head1 AUTHOR

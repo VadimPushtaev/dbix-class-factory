@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 4;
+use Test::More tests => 7;
 use Test::Deep;
 
 {
@@ -113,6 +113,20 @@ my $schema = DBIx::Class::Factory::Test::Schema->connect(
     }
 }
 
+{
+    package DBIx::Class::Factory::Test::LanguageFactory;
+
+    use base qw(DBIx::Class::Factory);
+
+    sub resultset {
+        $schema->resultset('Language');
+    }
+
+    sub fields {
+        name => __PACKAGE__->seq(sub {'Language #' . shift}),
+    }
+}
+
 $schema->deploy();
 
 my $result;
@@ -134,10 +148,16 @@ cmp_deeply(
 $result = DBIx::Class::Factory::Test::UserFactory->create();
 cmp_deeply(
     $schema->resultset('User')->find($result->id),
-    methods(name => 'User #2', superuser => 0),
+    methods(name => 'User #2'),
     'create'
 );
 
+$result = DBIx::Class::Factory::Test::LanguageFactory->create();
+cmp_deeply(
+    $schema->resultset('Language')->find($result->id),
+    methods(name => 'Language #0'),
+    'create (another factory)'
+);
 
 $result = DBIx::Class::Factory::Test::UserFactory->get_fields_batch(2, {superuser => 1});
 cmp_deeply(
@@ -148,6 +168,31 @@ cmp_deeply(
     ],
     'get_fields_batch'
 );
+
+$result = DBIx::Class::Factory::Test::UserFactory->build_batch(2);
+cmp_deeply(
+    $result,
+    [
+        methods(name => 'User #5', superuser => 0),
+        methods(name => 'User #6', superuser => 0),
+    ],
+    'build_batch'
+);
+
+$result = DBIx::Class::Factory::Test::UserFactory->create_batch(2, {superuser => 1});
+cmp_deeply(
+    [
+        $schema->resultset('User')->search({
+            id => [map {$_->id} @{$result}]
+        })->all()
+    ],
+    [
+        methods(name => 'User #7', superuser => 1),
+        methods(name => 'User #8', superuser => 1),
+    ],
+    'create_batch'
+);
+
 
 END {
     unlink('dbix-class-factory-test.sqlite');
