@@ -44,7 +44,7 @@ sub get_field {
     unless (exists $self->{processed_fields}->{$field}) {
         my $value = $self->{init_fields}->{$field};
     
-        while (ref($value) eq 'CODE') {
+        if (ref($value) eq 'CODE') {
             $value = $value->($self);
         }
 

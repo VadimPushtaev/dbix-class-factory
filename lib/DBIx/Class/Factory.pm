@@ -93,7 +93,23 @@ sub seq {
         $block->($iter++);
     }
 }
- 
+
+sub related_factory {
+    my ($class, $factory_class, $extra_fields) = @_;
+
+    return sub {
+        return $factory_class->get_fields($extra_fields);
+    };
+}
+
+sub related_factory_batch {
+    my ($class, $n, $factory_class, $extra_fields) = @_;
+
+    return sub {
+        return $factory_class->get_fields_batch($n, $extra_fields);
+    };
+}
+
 =head1 METHODS TO USE OUTSIDE
 
 =cut
