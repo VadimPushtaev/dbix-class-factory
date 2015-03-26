@@ -40,10 +40,12 @@ if you don't export anything, such as for a purely object-oriented module.
 sub base_factory {
     my ($class, $base_class) = @_;
 
-    $class->_class_data->{fields} = {
-        %{ $base_class->_class_data->{fields} },
-        %{ $class->     _class_data->{fields} },
-    };
+    foreach my $data_field (qw(fields exclude)) {
+        $class->_class_data->{$data_field} = {
+            %{ $base_class->_class_data->{$data_field} || {} },
+            %{ $class     ->_class_data->{$data_field} || {} },
+        };
+    }
 
     $class->_class_data->{resultset} = $base_class->_class_data->{resultset}
         unless defined $class->_class_data->{resultset};
@@ -80,9 +82,31 @@ sub field {
     return;
 }
 
+sub exclude {
+    my ($class, $list) = @_;
+
+    unless (ref $list eq 'ARRAY') {
+        $list = [$list];
+    }
+
+    foreach my $exclude_field (@{$list}) {
+        $class->_class_data->{exclude}->{$exclude_field} = 1;
+    }
+
+    return;
+}
+
 =head1 METHODS TO USE INSIDE
 
 =cut
+
+sub callback {
+    my ($class, $block) = @_;
+
+    return sub {
+        $block->(@_);
+    }
+}
 
 sub seq {
     my ($class, $block) = @_;
@@ -90,7 +114,7 @@ sub seq {
     my $iter = 0;
 
     return sub {
-        $block->($iter++);
+        $block->($iter++, @_);
     }
 }
 
@@ -119,10 +143,13 @@ sub get_fields {
 
     $extra_fields = {} unless defined $extra_fields;
 
-    my $fields = DBIx::Class::Factory::Fields->new( {
-        %{$class->_class_data->{fields}},
-        %{$extra_fields},
-    });
+    my $fields = DBIx::Class::Factory::Fields->new(
+        {
+            %{$class->_class_data->{fields}},
+            %{$extra_fields},
+        },
+        $class->_class_data->{exclude}
+    );
 
     return $fields->all();
 }

@@ -19,10 +19,11 @@ sub new {
 }
 
 sub init {
-    my ($self, $fields) = @_;
+    my ($self, $fields, $exclude_set) = @_;
 
     $self->{init_fields} = $fields;
     $self->{processed_fields} = {};
+    $self->{exclude_set} = $exclude_set;
 
     return;
 }
@@ -32,13 +33,15 @@ sub all {
 
     my %result;
     foreach my $field (keys %{$self->{init_fields}}) {
-        $result{$field} = $self->get_field($field);
+        unless (defined $self->{exclude_set}->{$field}) {
+            $result{$field} = $self->get($field);
+        }
     }
 
     return \%result;
 }
 
-sub get_field {
+sub get {
     my ($self, $field) = @_;
 
     unless (exists $self->{processed_fields}->{$field}) {

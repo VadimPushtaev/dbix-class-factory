@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 10;
+use Test::More tests => 11;
 use Test::Deep;
 
 {
@@ -86,6 +86,20 @@ my $schema = DBIx::Class::Factory::Test::Schema->connect(
 }
 
 {
+    package DBIx::Class::Factory::Test::ParamedUserFactory;
+
+    use base qw(DBIx::Class::Factory);
+
+    __PACKAGE__->resultset($schema->resultset('User'));
+    __PACKAGE__->exclude('all');
+    __PACKAGE__->fields({
+        name => __PACKAGE__->callback(sub { shift->get('all') }),
+        comment => __PACKAGE__->callback(sub { shift->get('all') }),
+        superuser => 0,
+    });
+}
+
+{
     package DBIx::Class::Factory::Test::AccountFactory;
 
     use base qw(DBIx::Class::Factory);
@@ -118,7 +132,7 @@ my $schema = DBIx::Class::Factory::Test::Schema->connect(
 
     __PACKAGE__->base_factory('DBIx::Class::Factory::Test::UserFactory');
     __PACKAGE__->fields({
-        comment => sub {shift->get_field('name')},
+        comment => sub {shift->get('name')},
     });
 }
 
@@ -221,6 +235,13 @@ cmp_deeply(
     $result->accounts->count,
     2,
     'related_factory_batch helper'
+);
+
+$result = DBIx::Class::Factory::Test::ParamedUserFactory->create({all => 'TEST'});
+cmp_deeply(
+    $schema->resultset('User')->find($result->id),
+    methods(name => 'TEST', comment => 'TEST'),
+    'create with excluded param'
 );
 
 END {
