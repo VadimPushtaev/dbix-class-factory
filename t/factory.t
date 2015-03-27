@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 11;
+use Test::More tests => 14;
 use Test::Deep;
 
 {
@@ -60,8 +60,6 @@ use Test::Deep;
     );
 }
 
-
-
 {
     package DBIx::Class::Factory::Test::Schema;
     use base qw(DBIx::Class::Schema);
@@ -72,6 +70,8 @@ use Test::Deep;
 my $schema = DBIx::Class::Factory::Test::Schema->connect(
     'dbi:SQLite:dbname=dbix-class-factory-test.sqlite', '', ''
 );
+my $result;
+my $user_iter = 42;
 
 {
     package DBIx::Class::Factory::Test::UserFactory;
@@ -80,9 +80,41 @@ my $schema = DBIx::Class::Factory::Test::Schema->connect(
 
     __PACKAGE__->resultset($schema->resultset('User'));
     __PACKAGE__->fields({
-        name => __PACKAGE__->seq(sub {'User #' . shift}),
+        name => __PACKAGE__->seq(sub {'User #' . shift}, $user_iter),
         superuser => 0,
     });
+}
+
+{
+    package DBIx::Class::Factory::Test::AfterUserFactory;
+
+    use base qw(DBIx::Class::Factory);
+
+    __PACKAGE__->resultset($schema->resultset('User'));
+
+    sub after_get_fields {
+        my ($class, $fields) = @_;
+
+        $fields->{name} = 'after';
+
+        return {%{$fields}, name => 'after'};
+    }
+
+    sub after_build {
+        my ($class, $row) = @_;
+
+        $row->superuser(1);
+
+        return $row;
+    }
+
+    sub after_create {
+        my ($class, $row) = @_;
+
+        $row->add_to_accounts({sum => 123});
+
+        return $row;
+    }
 }
 
 {
@@ -152,26 +184,24 @@ my $schema = DBIx::Class::Factory::Test::Schema->connect(
 
 $schema->deploy();
 
-my $result;
-
 $result = DBIx::Class::Factory::Test::UserFactory->get_fields();
 cmp_deeply(
     $result,
-    {name => 'User #0', superuser => 0},
+    {name => 'User #' . $user_iter++, superuser => 0},
     'get_fields'
 );
 
 $result = DBIx::Class::Factory::Test::UserFactory->build({superuser => 1});
 cmp_deeply(
     $result,
-    methods(name => 'User #1', superuser => 1),
+    methods(name => 'User #' . $user_iter++, superuser => 1),
     'build'
 );
 
 $result = DBIx::Class::Factory::Test::UserFactory->create();
 cmp_deeply(
     $schema->resultset('User')->find($result->id),
-    methods(name => 'User #2'),
+    methods(name => 'User #' . $user_iter++),
     'create'
 );
 
@@ -179,8 +209,8 @@ $result = DBIx::Class::Factory::Test::UserFactory->get_fields_batch(2, {superuse
 cmp_deeply(
     $result,
     [
-        {name => 'User #3', superuser => 1},
-        {name => 'User #4', superuser => 1},
+        {name => 'User #' . $user_iter++, superuser => 1},
+        {name => 'User #' . $user_iter++, superuser => 1},
     ],
     'get_fields_batch'
 );
@@ -189,8 +219,8 @@ $result = DBIx::Class::Factory::Test::UserFactory->build_batch(2);
 cmp_deeply(
     $result,
     [
-        methods(name => 'User #5', superuser => 0),
-        methods(name => 'User #6', superuser => 0),
+        methods(name => 'User #' . $user_iter++, superuser => 0),
+        methods(name => 'User #' . $user_iter++, superuser => 0),
     ],
     'build_batch'
 );
@@ -203,8 +233,8 @@ cmp_deeply(
         })->all()
     ],
     bag(
-        methods(name => 'User #7', superuser => 1),
-        methods(name => 'User #8', superuser => 1),
+        methods(name => 'User #' . $user_iter++, superuser => 1),
+        methods(name => 'User #' . $user_iter++, superuser => 1),
     ),
     'create_batch'
 );
@@ -212,7 +242,7 @@ cmp_deeply(
 $result = DBIx::Class::Factory::Test::CommentedUserFactory->create();
 cmp_deeply(
     $schema->resultset('User')->find($result->id),
-    methods(comment => 'User #9'),
+    methods(comment => 'User #' . $user_iter++),
     'create (with base factory)'
 );
 
@@ -226,7 +256,7 @@ cmp_deeply(
 $result = DBIx::Class::Factory::Test::AccountFactory->create();
 cmp_deeply(
     $schema->resultset('User')->find($result->user_id),
-    methods(name => 'User #10'),
+    methods(name => 'User #' . $user_iter++),
     'related_factory helper'
 );
 
@@ -242,6 +272,23 @@ cmp_deeply(
     $schema->resultset('User')->find($result->id),
     methods(name => 'TEST', comment => 'TEST'),
     'create with excluded param'
+);
+
+$result = DBIx::Class::Factory::Test::AfterUserFactory->create();
+cmp_deeply(
+    $schema->resultset('User')->find($result->id),
+    methods(name => 'after'),
+    'after_get_fields'
+);
+cmp_deeply(
+    $schema->resultset('User')->find($result->id),
+    methods(superuser => 1),
+    'after_build'
+);
+cmp_deeply(
+    [$schema->resultset('User')->find($result->id)->accounts],
+    [methods(sum => 123)],
+    'after_create'
 );
 
 END {

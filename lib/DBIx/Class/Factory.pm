@@ -91,7 +91,7 @@ sub exclude {
     return;
 }
 
-=head1 METHODS TO USE INSIDE
+=head1 HELPERS
 
 =cut
 
@@ -104,12 +104,12 @@ sub callback {
 }
 
 sub seq {
-    my ($class, $block) = @_;
+    my ($class, $block, $init_value) = @_;
 
-    my $iter = 0;
+    $init_value = 0 unless defined $init_value;
 
     return sub {
-        $block->($iter++, @_);
+        $block->($init_value++, @_);
     }
 }
 
@@ -146,7 +146,7 @@ sub get_fields {
         $class->_class_data->{exclude}
     );
 
-    return $fields->all();
+    return $class->after_get_fields($fields->all());
 }
 
 sub build {
@@ -155,13 +155,14 @@ sub build {
     my $resultset = $class->_class_data->{resultset};
     die unless defined $resultset;
 
-    return $resultset->new($class->get_fields($extra_fields));
+    return $class->after_build($resultset->new($class->get_fields($extra_fields)));
 }
+
 
 sub create {
     my ($class, $extra_fields) = @_;
 
-    return $class->build($extra_fields)->insert();
+    return $class->after_create($class->build($extra_fields)->insert());
 }
 
 sub get_fields_batch {
@@ -180,6 +181,28 @@ sub create_batch {
     my ($class, @params) = @_;
 
     return $class->_batch('create', @params);
+}
+
+=head1 METHOD TO OVERRIDE
+
+=cut
+
+sub after_get_fields {
+    my ($class, $fields) = @_;
+
+    return $fields;
+}
+
+sub after_build {
+    my ($class, $row) = @_;
+
+    return $row;
+}
+
+sub after_create {
+    my ($class, $row) = @_;
+
+    return $row;
 }
 
 =head1 PRIVATE METHODS
