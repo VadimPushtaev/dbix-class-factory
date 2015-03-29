@@ -193,7 +193,7 @@ Helpers are here for that.
 =item B<callback>
 
 Sometimes you want field value to be calculated everytime fields for object are created.
-Just provide C</callback> as a value in that case.
+Just provide C<callback> as a value in that case.
 
 It will be called with the L<DBIx::Class::Factory::Fields> instance as an argument.
 
