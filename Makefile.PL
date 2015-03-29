@@ -4,6 +4,9 @@ use strict;
 use warnings FATAL => 'all';
 use inc::Module::Install;
 
+requires 'strict' => 0;
+requires 'warnings' => 0;
+
 test_requires 'DBIx::Class' => 0;
 test_requires 'SQL::Translator' => 0;
 test_requires 'Test::More' => 0;
