@@ -40,7 +40,7 @@ Create factory:
 
         use base qw(DBIx::Class::Factory);
 
-        __PACKAGE__->base_factory('My::UserFactory'));
+        __PACKAGE__->base_factory('My::UserFactory');
         __PACKAGE__->field(superuser => 1);
     }
 
