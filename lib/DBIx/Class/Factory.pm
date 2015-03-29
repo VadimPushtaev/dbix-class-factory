@@ -64,7 +64,9 @@ You can also add some data at the moment of creating instance, redefining factor
 
 Tests for this module contains a bunch of usefull examples.
 
-=head1 FACTORY SETTINGS
+=head1 METHODS
+
+=head2 Factory settings
 
 =over
 
@@ -128,7 +130,7 @@ sub fields {
     __PACKAGE__->field($name => $value);
 
 Add field to the factory. C<$name> is directly used in resultset's C<new> method.
-C<$value> must be any value or helper result (see L</HELPERS>).
+C<$value> must be any value or helper result (see L</Helpers>).
 C<CODEREF> as a value will be used as callback. However, you must not rely on this,
 it can be changed in future releases — use L</callback> helper instead.
 
@@ -181,7 +183,7 @@ sub exclude {
 
 =back
 
-=head1 HELPERS
+=head2 Helpers
 
 Sometimes you want the value of the field to be not just static value but something special.
 Helpers are here for that.
@@ -281,7 +283,7 @@ sub related_factory_batch {
 
 =back
 
-=head1 FACTORY METHODS
+=head2 Factory actions
 
 =over
 
@@ -372,7 +374,7 @@ sub create_batch {
 
 =back
 
-=head1 HOOKS
+=head2 Hooks
 
 You can define the following methods in your factory to be executed after corresponding methods.
 
