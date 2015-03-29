@@ -437,10 +437,10 @@ sub _class_data {
 
     no strict 'refs';
 
-    my $var_name = $class . '::class_data';
+    my $var_name = $class . '::_dbix_class_factory_data';
 
     unless (defined ${$var_name}) {
-        ${$var_name} = {fields => {}}
+        ${$var_name} = {fields => {}};
     }
 
     return ${$var_name};
