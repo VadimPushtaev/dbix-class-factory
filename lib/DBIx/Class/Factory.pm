@@ -9,7 +9,7 @@ use DBIx::Class::Factory::Fields;
 
 =head1 NAME
 
-DBIx::Class::Factory — factory-style fixtures for DBIx::Class
+DBIx::Class::Factory - factory-style fixtures for DBIx::Class
 
 =head1 VERSION
 

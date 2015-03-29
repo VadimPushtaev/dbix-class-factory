@@ -7,7 +7,7 @@ use warnings;
 
 =head1 NAME
 
-DBIx::Class::Factory::Fields — fields for DBIx::Class::Factory class
+DBIx::Class::Factory::Fields - fields for DBIx::Class::Factory class
 
 =head1 DESCRIPTION
 
