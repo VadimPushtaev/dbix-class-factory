@@ -23,26 +23,20 @@ our $VERSION = '0.02';
 
 Create factory:
 
-    {
-        package My::UserFactory;
+    package My::UserFactory;
+    use base qw(DBIx::Class::Factory);
 
-        use base qw(DBIx::Class::Factory);
+    __PACKAGE__->resultset(My::Schema->resultset('User'));
+    __PACKAGE__->fields({
+        name => __PACKAGE__->seq(sub {'User #' . shift}),
+        status => 'new',
+    });
 
-        __PACKAGE__->resultset(My::Schema->resultset('User'));
-        __PACKAGE__->fields({
-            name => __PACKAGE__->seq(sub {'User #' . shift}),
-            status => 'new',
-        });
-    }
+    package My::SuperUserFactory;
+    use base qw(DBIx::Class::Factory);
 
-    {
-        package My::SuperUserFactory;
-
-        use base qw(DBIx::Class::Factory);
-
-        __PACKAGE__->base_factory('My::UserFactory');
-        __PACKAGE__->field(superuser => 1);
-    }
+    __PACKAGE__->base_factory('My::UserFactory');
+    __PACKAGE__->field(superuser => 1);
 
 Use factory:
 
