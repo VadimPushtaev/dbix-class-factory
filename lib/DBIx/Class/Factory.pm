@@ -234,17 +234,15 @@ sub seq {
 This helper just calls another factory's L</get_fields> method.
 Thanks to C<DBIx::Class>, the returned data will be used to create a related object.
 
-    {
-        package My::UserFactory;
+    package My::UserFactory;
 
-        use base qw(DBIx::Class::Factory);
+    use base qw(DBIx::Class::Factory);
 
-        __PACKAGE__->resultset(My::Schema->resultset('User'));
-        __PACKAGE__->fields({
-            # create a new city if it's not specified
-            city => __PACKAGE__->related_factory('My::CityFactory'),
-        });
-    }
+    __PACKAGE__->resultset(My::Schema->resultset('User'));
+    __PACKAGE__->fields({
+        # create a new city if it's not specified
+        city => __PACKAGE__->related_factory('My::CityFactory'),
+    });
 
 =cut
 
