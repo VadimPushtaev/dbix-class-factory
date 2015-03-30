@@ -1,5 +1,7 @@
 Revision history for DBIx-Class-Factory
 
-0.01    Date/time
-        First version, released on an unsuspecting world.
+0.01    2015-03-27
+        - Initial release, never worked
 
+0.02    2015-03-30
+        - First stable release
