@@ -40,7 +40,7 @@ use Test::Deep;
     use base qw(DBIx::Class);
 
     __PACKAGE__->load_components('Core');
-    __PACKAGE__->table('city');
+    __PACKAGE__->table('account');
     __PACKAGE__->add_columns(
         id => {
             data_type => 'integer',
