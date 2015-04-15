@@ -13,11 +13,11 @@ DBIx::Class::Factory - factory-style fixtures for DBIx::Class
 
 =head1 VERSION
 
-Version 0.02
+Version 0.03
 
 =cut
 
-our $VERSION = '0.02';
+our $VERSION = '0.02_0001';
 
 =head1 SYNOPSIS
 
