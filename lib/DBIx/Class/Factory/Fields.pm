@@ -93,6 +93,10 @@ sub _init {
     return;
 }
 
+=head1 DEDICATION
+
+This module is lovingly dedicated to my wife Catherine.
+
 =head1 AUTHOR
 
 Vadim Pushtaev, C<pushtaev@cpan.org>
