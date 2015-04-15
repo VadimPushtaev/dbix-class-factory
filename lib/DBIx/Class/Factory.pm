@@ -320,12 +320,24 @@ sub build {
 
 Creates L<DBIx::Class::Row> object and saves it to a database.
 
+You can also provide the second argument, hashref of options.
+The only option is 'discard_changes', a boolean value which default is true.
+It says whether L<DBIx::Class::Row/discard_changes> should be called on the created object.
+
+    My::UserFactory->create(undef, {discard_changes => 0}); 
+
 =cut
 
 sub create {
-    my ($class, $extra_fields) = @_;
+    my ($class, $extra_fields, $options) = @_;
 
-    return $class->after_create($class->build($extra_fields)->insert());
+    $options = {} unless defined $options;
+    $options->{discard_changes} = 1 unless exists $options->{discard_changes};
+
+    my $row = $class->build($extra_fields)->insert();
+    $row->discard_changes if $options->{discard_changes};
+
+    return $class->after_create($row);
 }
 
 =item B<get_fields_batch>

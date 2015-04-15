@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 14;
+use Test::More tests => 16;
 use Test::Deep;
 
 {
@@ -20,9 +20,10 @@ use Test::Deep;
             size      => '100',
         },
         comment => {
-            data_type   => 'varchar',
-            size        => '100',
-            is_nullable => 1,
+            data_type     => 'varchar',
+            size          => '100',
+            default_value => 'DEFAULT COMMENT',
+            is_nullable   => 1,
         },
         superuser => {
             data_type => 'bool',
@@ -204,6 +205,11 @@ cmp_deeply(
     methods(name => 'User #' . $user_iter++),
     'create'
 );
+is($result->comment, 'DEFAULT COMMENT', 'discard_changes is on by default');
+
+$result = DBIx::Class::Factory::Test::UserFactory->create(undef, {discard_changes => 0});
+$user_iter++;
+is($result->comment, undef, 'discard_changes is off');
 
 $result = DBIx::Class::Factory::Test::UserFactory->get_fields_batch(2, {superuser => 1});
 cmp_deeply(
