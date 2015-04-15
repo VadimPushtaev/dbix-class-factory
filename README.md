@@ -3,7 +3,7 @@ DBIx::Class::Factory
 
 Ruby has `factory_girl`, Python has `factory_boy`.
 
-Now Perl has `DBIx::Class::Factory`.
+Now Perl has [`DBIx::Class::Factory`](https://metacpan.org/pod/DBIx::Class::Factory).
 
 Create factory:
 
