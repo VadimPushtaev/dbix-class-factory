@@ -9,5 +9,5 @@ Revision history for DBIx-Class-Factory
 0.03    2015-04-15
         - Add "discard_changes" after create
 
-0.03    2015-04-15
+0.04    2015-04-16
         - Remove create options
