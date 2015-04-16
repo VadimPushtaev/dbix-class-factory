@@ -13,11 +13,11 @@ DBIx::Class::Factory - factory-style fixtures for DBIx::Class
 
 =head1 VERSION
 
-Version 0.03
+Version 0.04
 
 =cut
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 =head1 SYNOPSIS
 
@@ -311,7 +311,6 @@ sub build {
     my ($class, $extra_fields) = @_;
 
     my $resultset = $class->_class_data->{resultset};
-    die unless defined $resultset;
 
     return $class->after_build($resultset->new($class->get_fields($extra_fields)));
 }
@@ -320,22 +319,15 @@ sub build {
 
 Creates L<DBIx::Class::Row> object and saves it to a database.
 
-You can also provide the second argument, hashref of options.
-The only option is C<discard_changes>, a boolean value which default is true.
-It says whether L<DBIx::Class::Row/discard_changes> should be called on the created object.
-
-    My::UserFactory->create(undef, {discard_changes => 0}); 
+L<DBIx::Class::Row/discard_changes> is also called on the created object.
 
 =cut
 
 sub create {
-    my ($class, $extra_fields, $options) = @_;
-
-    $options = {} unless defined $options;
-    $options->{discard_changes} = 1 unless exists $options->{discard_changes};
+    my ($class, $extra_fields) = @_;
 
     my $row = $class->build($extra_fields)->insert();
-    $row->discard_changes if $options->{discard_changes};
+    $row->discard_changes;
 
     return $class->after_create($row);
 }
