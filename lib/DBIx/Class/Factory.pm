@@ -56,7 +56,7 @@ of creating data in database via L<DBIx::Class>.
 To create a factory just derive from L<DBIx::Class::Factory> and apply some settings.
 You can also add some data at the moment of creating instance, redefining factory defaults.
 
-Tests for this module contains a bunch of usefull examples.
+Tests for this module contain a bunch of usefull examples.
 
 =head1 METHODS
 
