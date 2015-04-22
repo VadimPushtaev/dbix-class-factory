@@ -450,7 +450,7 @@ This module is lovingly dedicated to my wife Catherine.
 
 =head1 AUTHOR
 
-Vadim Pushtaev, C<pushtaev@cpan.org>
+Vadim Pushtaev, C<pushtaev@cpan.org>.
 
 =head1 BUGS AND FEATURES
 
