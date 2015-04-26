@@ -36,7 +36,7 @@ sub new {
 
 =item B<all>
 
-Returns hashref with all fields that are not excluded
+Returns hashref with all fields that are not excluded.
 
 =cut
 
