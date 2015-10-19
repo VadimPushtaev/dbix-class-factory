@@ -1,5 +1,5 @@
 DBIx::Class::Factory
--------------------
+--------------------
 
 Ruby has `factory_girl`, Python has `factory_boy`.
 
